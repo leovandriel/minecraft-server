@@ -1,0 +1,9 @@
+AllowUsers X mctunnel
+
+Match User mctunnel
+    PasswordAuthentication no
+    PermitOpen localhost:25565
+    X11Forwarding no
+    AllowAgentForwarding no
+    ForceCommand /bin/false
+    AuthorizedKeysFile /etc/ssh/authorized-keys/%u

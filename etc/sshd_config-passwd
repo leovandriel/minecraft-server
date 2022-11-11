@@ -1,0 +1,2 @@
+Match User mctunnel
+    PasswordAuthentication yes

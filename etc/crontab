@@ -1,0 +1,3 @@
+30 * * * * /usr/local/bin/snapshot-hourly
+1 4 * * * /usr/local/bin/close-port
+5 4 * * * /usr/local/bin/update-server

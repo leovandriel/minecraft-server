@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+exec &>> /var/log/minecraft.log
+echo "$(date -Is) $(basename "$0"): closing port"
+/usr/sbin/ufw deny 25565/tcp
+/usr/sbin/ufw deny 19132:19133/tcp
+/usr/sbin/ufw deny 19132:19133/udp
+echo "$(date -Is) $(basename "$0"): port closed"

@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+exec &>> /var/log/minecraft.log
+echo "$(date -Is) $(basename "$0"): stop"
+systemctl stop minecraft
+echo "$(date -Is) $(basename "$0"): snapshot"
+sudo /usr/local/bin/snapshot-daily
+echo "$(date -Is) $(basename "$0"): download"
+sudo -u minecraft /usr/local/bin/download-paper
+echo "$(date -Is) $(basename "$0"): start"
+systemctl start minecraft
+echo "$(date -Is) $(basename "$0"): update complete"
