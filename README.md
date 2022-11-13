@@ -235,6 +235,52 @@ tail /opt/minecraft/logs/backup-daily.log
 systemctl status minecraft
 ```
 
+## Tunneling
+
+If you prefer not to expose the Paper server to the network, use SSH tunneling. 
+
+Remove the port from UFW, replacing `X`:
+
+```
+sudo ufw delete allow X
+```
+
+Update server port, back to default (25565), see [`server.properties-tunnel`](server.properties-tunnel):
+
+```
+sudo nano /opt/minecraft/server/server.properties
+sudo systemctl restart minecraft
+```
+
+Locally, set up a tunnel, replacing `X`:
+
+```
+ssh -NL 25565:localhost:25565 -p X 192.168.X.X
+```
+
+You can now connect to the server using the address `localhost`.
+
+To allow others to connect, create a new user:
+
+```
+sudo groupadd --system mctunnel
+sudo useradd --system --gid mctunnel --shell /usr/sbin/nologin mctunnel
+sudo passwd mctunnel
+```
+
+Update the SSH config according to [`sshd_config-tunnel`](sshd_config-tunnel), replacing `X`:
+
+```
+sudo nano /etc/ssh/sshd_config
+sudo systemctl restart ssh
+```
+
+Others can now set up a tunnel, replacing `X`:
+
+```
+ssh -NL 25565:localhost:25565 -p X mctunnel@192.168.X.X
+```
+
 ## License
 
 MIT
