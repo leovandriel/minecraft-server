@@ -260,12 +260,27 @@ ssh -NL 25565:localhost:25565 -p X 192.168.X.X
 
 You can now connect to the server using the address `localhost`.
 
-To allow others to connect, create a new user:
+To allow others to connect, create a new system user:
 
 ```
 sudo groupadd --system mctunnel
 sudo useradd --system --gid mctunnel --shell /usr/sbin/nologin mctunnel
-sudo passwd mctunnel
+```
+
+To allow public key logins, append the public key to authorized keys:
+
+```
+sudo mkdir /etc/ssh/authorized-keys
+sudo touch /etc/ssh/authorized-keys/mctunnel
+sudo chown mctunnel.mctunnel /etc/ssh/authorized-keys/mctunnel
+sudo nano /etc/ssh/authorized-keys/mctunnel
+```
+
+Client-side, an SSH key can be generated and installed, replacing `X`:
+
+```
+ssh-keygen -t ed25519
+cat ~/.ssh/id_ed25519.pub
 ```
 
 Update the SSH config according to [`sshd_config-tunnel`](sshd_config-tunnel), replacing `X`:
@@ -279,6 +294,13 @@ Others can now set up a tunnel, replacing `X`:
 
 ```
 ssh -NL 25565:localhost:25565 -p X mctunnel@192.168.X.X
+```
+
+Optionally, to allow password logins, set a password and update the SSH config according to [`sshd_config-passwd`](sshd_config-passwd):
+
+```
+sudo passwd mctunnel
+sudo nano /etc/ssh/sshd_config
 ```
 
 ## License
