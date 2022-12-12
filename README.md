@@ -33,9 +33,17 @@ sudo dd if=debian-X-X-netinst.iso of=/dev/diskX bs=1024k status=progress
 
 Boot of the USB and follow instructions. Skip installing a desktop environment and install SSH server.
 
+Get the fingerprint of the public key:
+
+```
+ssh-keygen -E md5 -lf /etc/ssh/ssh_host_rsa_key.pub
+ssh-keygen -E md5 -lf /etc/ssh/ssh_host_ecdsa_key.pub
+ssh-keygen -E md5 -lf /etc/ssh/ssh_host_ed25519_key.pub
+```
+
 ## Install SSH
 
-Locally, copy SSH key, replacing `X`:
+Locally, verify above fingerprint and copy SSH key, replacing `X`:
 
 ```
 ssh-copy-id 192.168.X.X
