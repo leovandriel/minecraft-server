@@ -55,7 +55,7 @@ SSH into server using password`:
 ssh 192.168.X.X
 ```
 
-Update the SSH config according to [`sshd_config`](sshd_config), replacing `X`:
+Update the SSH config according to [`sshd_config`](config/sshd_config), replacing `X`:
 
 ```
 sudo nano /etc/ssh/sshd_config
@@ -99,13 +99,13 @@ Set up Unattended Upgrades:
 sudo apt install unattended-upgrades
 ```
 
-Update the config according to [`50unattended-upgrades`](50unattended-upgrades):
+Update the config according to [`50unattended-upgrades`](config/50unattended-upgrades):
 
 ```
 sudo nano /etc/apt/apt.conf.d/50unattended-upgrades
 ```
 
-Create auto-upgrade according to [`20auto-upgrades`](20auto-upgrades):
+Create auto-upgrade according to [`20auto-upgrades`](config/20auto-upgrades):
 
 ```
 sudo nano /etc/apt/apt.conf.d/20auto-upgrades
@@ -127,7 +127,7 @@ sudo mkdir /opt/minecraft /opt/minecraft/server /opt/minecraft/logs /opt/minecra
 sudo chown minecraft.minecraft /opt/minecraft/server /opt/minecraft/logs
 ```
 
-Create download script according to [`download-paper.sh`](download-paper.sh):
+Create download script according to [`download-paper.sh`](script/download-paper.sh):
 
 ```
 sudo nano /opt/minecraft/script/download-paper.sh
@@ -150,7 +150,7 @@ sudo apt install screen
 sudo apt install openjdk-17-jre
 ```
 
-Create service according to [`minecraft.service`](minecraft.service):
+Create service according to [`minecraft.service`](config/minecraft.service):
 
 ```
 sudo nano /etc/systemd/system/minecraft.service
@@ -163,7 +163,7 @@ sudo systemctl start minecraft
 sudo nano /opt/minecraft/server/eula.txt
 ```
 
-Update server settings according to [`server.properties`](server.properties):
+Update server settings according to [`server.properties`](config/server.properties):
 
 ```
 sudo nano /opt/minecraft/server/server.properties
@@ -187,13 +187,13 @@ tail /opt/minecraft/server/logs/latest.log
 
 ## Auto Backup Server
 
-Create hourly update script according to [`backup-hourly.sh`](backup-hourly.sh):
+Create hourly update script according to [`backup-hourly.sh`](script/backup-hourly.sh):
 
 ```
 sudo nano /opt/minecraft/script/backup-hourly.sh
 ```
 
-Create daily update script according to [`backup-daily.sh`](backup-daily.sh):
+Create daily update script according to [`backup-daily.sh`](script/backup-daily.sh):
 
 ```
 sudo nano /opt/minecraft/script/backup-daily.sh
@@ -206,7 +206,7 @@ sudo chmod +x /opt/minecraft/script/backup-hourly.sh
 sudo chmod +x /opt/minecraft/script/backup-daily.sh
 ```
 
-Update `crontab` according to [`crontab`](crontab):
+Update `crontab` according to [`crontab`](config/crontab):
 
 ```
 sudo crontab -e
@@ -221,7 +221,7 @@ tail /opt/minecraft/logs/backup-hourly.log
 
 ## Auto Update Server
 
-Create update script according to [`update-server.sh`](update-server.sh):
+Create update script according to [`update-server.sh`](script/update-server.sh):
 
 ```
 sudo nano /opt/minecraft/script/update-server.sh
@@ -233,7 +233,7 @@ Make script executable:
 sudo chmod +x /opt/minecraft/script/update-server.sh
 ```
 
-Update `crontab` according to [`crontab`](crontab):
+Update `crontab` according to [`crontab`](config/crontab):
 
 ```
 sudo crontab -e
@@ -258,7 +258,7 @@ Remove the port from UFW, replacing `X`:
 sudo ufw delete allow X
 ```
 
-Update server port, back to default (25565), see [`server.properties-tunnel`](server.properties-tunnel):
+Update server port, back to default (25565), see [`server.properties-tunnel`](config/server.properties-tunnel):
 
 ```
 sudo nano /opt/minecraft/server/server.properties
@@ -296,7 +296,7 @@ ssh-keygen -t ed25519
 cat ~/.ssh/id_ed25519.pub
 ```
 
-Update the SSH config according to [`sshd_config-tunnel`](sshd_config-tunnel), replacing `X`:
+Update the SSH config according to [`sshd_config-tunnel`](config/sshd_config-tunnel), replacing `X`:
 
 ```
 sudo nano /etc/ssh/sshd_config
@@ -309,7 +309,7 @@ Others can now set up a tunnel:
 ssh -NL 25565:localhost:25565 mctunnel@192.168.X.X
 ```
 
-Optionally, to allow password logins, set a password and update the SSH config according to [`sshd_config-passwd`](sshd_config-passwd):
+Optionally, to allow password logins, set a password and update the SSH config according to [`sshd_config-passwd`](config/sshd_config-passwd):
 
 ```
 sudo passwd mctunnel
