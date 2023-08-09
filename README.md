@@ -41,6 +41,16 @@ ssh-keygen -E md5 -lf /etc/ssh/ssh_host_ecdsa_key.pub
 ssh-keygen -E md5 -lf /etc/ssh/ssh_host_ed25519_key.pub
 ```
 
+## Create User
+
+If needed, create non-root user, replacing `X`:
+
+```
+sudo useradd --shell /bin/bash --create-home X
+usermod -aG sudo X
+sudo passwd X
+```
+
 ## Install SSH
 
 Locally, verify above fingerprint and copy SSH key:
