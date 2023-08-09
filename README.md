@@ -43,13 +43,13 @@ ssh-keygen -E md5 -lf /etc/ssh/ssh_host_ed25519_key.pub
 
 ## Install SSH
 
-Locally, verify above fingerprint and copy SSH key, replacing `X`:
+Locally, verify above fingerprint and copy SSH key:
 
 ```
 ssh-copy-id 192.168.X.X
 ```
 
-SSH into server using password, replacing `X`:
+SSH into server using password`:
 
 ```
 ssh 192.168.X.X
@@ -69,24 +69,24 @@ systemctl status sshd
 exit
 ```
 
-SSH into server using public key, replacing `X`:
+SSH into server using public key:
 
 ```
-ssh -p X 192.168.X.X
+ssh 192.168.X.X
 ```
 
 Going forward, all instructions will be over SSH.
 
 ## Setup Firewall
 
-Set up UFW firewall, replacing `X` with SSH and server port:
+Set up UFW firewall, with port 25565 for the Minecraft server:
 
 ```
 sudo apt install ufw
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow X
-sudo ufw allow X
+sudo ufw allow ssh
+sudo ufw allow 25565
 sudo ufw enable
 sudo ufw status
 ```
@@ -113,13 +113,18 @@ sudo nano /etc/apt/apt.conf.d/20auto-upgrades
 
 ## Download Paper
 
-Create directories in `/opt` and add `minecraft` user:
+Add `minecraft` user:
+
+```
+sudo groupadd --system minecraft
+sudo useradd --system --gid minecraft --shell /usr/sbin/nologin --home-dir /opt/minecraft minecraft
+```
+
+Create directories in `/opt`:
 
 ```
 sudo mkdir /opt/minecraft /opt/minecraft/server /opt/minecraft/logs /opt/minecraft/script /opt/minecraft/backup
 sudo chown minecraft.minecraft /opt/minecraft/server /opt/minecraft/logs
-sudo groupadd --system minecraft
-sudo useradd --system --gid minecraft --shell /usr/sbin/nologin --home-dir /opt/minecraft minecraft
 ```
 
 Create download script according to [`download-paper.sh`](download-paper.sh):
@@ -158,7 +163,7 @@ sudo systemctl start minecraft
 sudo nano /opt/minecraft/server/eula.txt
 ```
 
-Update server settings according to [`server.properties`](server.properties), replacing `X`:
+Update server settings according to [`server.properties`](server.properties):
 
 ```
 sudo nano /opt/minecraft/server/server.properties
@@ -260,10 +265,10 @@ sudo nano /opt/minecraft/server/server.properties
 sudo systemctl restart minecraft
 ```
 
-Locally, set up a tunnel, replacing `X`:
+Locally, set up a tunnel:
 
 ```
-ssh -NL 25565:localhost:25565 -p X 192.168.X.X
+ssh -NL 25565:localhost:25565 192.168.X.X
 ```
 
 You can now connect to the server using the address `localhost`.
@@ -284,7 +289,7 @@ sudo chown mctunnel.mctunnel /etc/ssh/authorized-keys/mctunnel
 sudo nano /etc/ssh/authorized-keys/mctunnel
 ```
 
-Client-side, an SSH key can be generated and installed, replacing `X`:
+Client-side, an SSH key can be generated and installed:
 
 ```
 ssh-keygen -t ed25519
@@ -298,10 +303,10 @@ sudo nano /etc/ssh/sshd_config
 sudo systemctl restart ssh
 ```
 
-Others can now set up a tunnel, replacing `X`:
+Others can now set up a tunnel:
 
 ```
-ssh -NL 25565:localhost:25565 -p X mctunnel@192.168.X.X
+ssh -NL 25565:localhost:25565 mctunnel@192.168.X.X
 ```
 
 Optionally, to allow password logins, set a password and update the SSH config according to [`sshd_config-passwd`](sshd_config-passwd):

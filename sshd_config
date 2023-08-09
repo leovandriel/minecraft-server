@@ -1,5 +1,5 @@
 AllowUsers X
-Port X
+Port 22
 PermitRootLogin no
 PubkeyAuthentication yes
 PasswordAuthentication no
