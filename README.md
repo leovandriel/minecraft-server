@@ -87,6 +87,7 @@ sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow ssh
 sudo ufw allow 25565
+sudo ufw allow 19132
 sudo ufw enable
 sudo ufw status
 ```
@@ -167,6 +168,12 @@ Update server settings according to [`server.properties`](config/server.properti
 
 ```
 sudo nano /opt/minecraft/server/server.properties
+```
+
+Update Geyser settings according to [`config.yaml`](config/config.yaml):
+
+```
+sudo nano /opt/minecraft/server/plugins/Geyser-Spigot/config.yml
 ```
 
 Enable and run the service:
