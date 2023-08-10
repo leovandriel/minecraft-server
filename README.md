@@ -43,12 +43,12 @@ ssh-keygen -E md5 -lf /etc/ssh/ssh_host_ed25519_key.pub
 
 ## Create User
 
-If needed, create non-root user, replacing `X`:
+If needed, as root create non-root user, replacing `X`:
 
 ```
-sudo useradd --shell /bin/bash --create-home X
+useradd --shell /bin/bash --create-home X
 usermod -aG sudo X
-sudo passwd X
+passwd X
 ```
 
 ## Install SSH
@@ -89,9 +89,10 @@ Going forward, all instructions will be over SSH.
 
 ## Setup Firewall
 
-Set up UFW firewall, with port 25565 for the Minecraft server:
+Set up UFW firewall, with ssh and Minecraft server ports:
 
 ```
+sudo apt-get update && sudo apt-get upgrade
 sudo apt install ufw
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
@@ -134,8 +135,8 @@ sudo useradd --system --gid minecraft --shell /usr/sbin/nologin --home-dir /opt/
 Create directories in `/opt`:
 
 ```
-sudo mkdir /opt/minecraft /opt/minecraft/server /opt/minecraft/logs /opt/minecraft/script /opt/minecraft/backup
-sudo chown minecraft.minecraft /opt/minecraft/server /opt/minecraft/logs
+sudo mkdir /opt/minecraft /opt/minecraft/server /opt/minecraft/server/plugins /opt/minecraft/logs /opt/minecraft/script /opt/minecraft/backup
+sudo chown minecraft.minecraft /opt/minecraft/server /opt/minecraft/server/plugins /opt/minecraft/logs
 ```
 
 Create download script according to [`download-paper.sh`](script/download-paper.sh):
@@ -180,9 +181,17 @@ Update server settings according to [`server.properties`](config/server.properti
 sudo nano /opt/minecraft/server/server.properties
 ```
 
-Update Geyser settings according to [`config.yaml`](config/config.yaml):
+If server.properties was not created, you can debug by running:
 
 ```
+cd /opt/minecraft/server
+sudo -u minecraft /usr/bin/java -jar paper.jar --nogui
+```
+
+Load plugins and update Geyser settings according to [`config.yaml`](config/config.yaml):
+
+```
+sudo systemctl start minecraft
 sudo nano /opt/minecraft/server/plugins/Geyser-Spigot/config.yml
 ```
 
@@ -190,7 +199,7 @@ Enable and run the service:
 
 ```
 sudo systemctl enable minecraft
-sudo systemctl start minecraft
+sudo systemctl restart minecraft
 systemctl status minecraft
 ```
 
