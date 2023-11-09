@@ -13,6 +13,7 @@ Features:
 - Auto update server
 - Auto local backup
 - Logs
+- Encrypted drive with USB unlock
 
 ## Bootable USB
 
@@ -101,6 +102,57 @@ sudo ufw allow 25565
 sudo ufw allow 19132
 sudo ufw enable
 sudo ufw status
+```
+
+## USB Passphrase
+
+Insert USB stick. Find USB and encrypted drive:
+
+```bash
+lsblk
+```
+
+Create a random passphrase, write it to USB, and add it to LUKS, replacing `X`
+according to the above listing:
+
+```bash
+head -c 256 /dev/urandom > passphrase
+sudo dd if=passphrase of=/dev/sdX bs=1
+sudo cryptsetup luksAddKey /dev/sdaX passphrase
+rm passphrase
+```
+
+Find the `id` of the USB drive:
+
+```bash
+ls -l /dev/disk/by-id
+```
+
+In `crypttab`, replace `none` with the ID and append
+`,keyscript=/bin/passphrase-from-usb`.
+
+```bash
+sudo nano /etc/crypttab
+```
+
+Create the script file according to
+[`passphrase-from-usb`](config/passphrase-from-usb) and make it executable:
+
+```bash
+sudo nano /bin/passphrase-from-usb
+sudo chmod 755 /bin/passphrase-from-usb
+```
+
+Update initramfs:
+
+```bash
+sudo update-initramfs -u
+```
+
+Restart the system to confirm change:
+
+```bash
+sudo shutdown -r now
 ```
 
 ## Auto Update OS

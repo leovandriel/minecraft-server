@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -e
+
+if ! [ -e /passphrase-from-usb-tried ]; then
+    touch /passphrase-from-usb-tried
+    sleep 2
+    if ! [ -e "/dev/disk/by-id/$CRYPTTAB_KEY" ]; then
+        echo "Waiting for passphrase USB drive..." >&2
+        sleep 3
+    fi
+    if [ -e "/dev/disk/by-id/$CRYPTTAB_KEY" ]; then
+        echo "Unlocking disk $CRYPTTAB_NAME" >&2
+        head -c256 "/dev/disk/by-id/$CRYPTTAB_KEY"
+        exit
+    else
+        echo "Cannot find passphrase USB drive" >&2
+    fi
+fi
+
+/lib/cryptsetup/askpass "Please unlock disk $CRYPTTAB_NAME: "
