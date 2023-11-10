@@ -1,7 +1,5 @@
-#!/bin/sh
-
+#!/bin/bash
 set -e
-
 if ! [ -e /passphrase-from-usb-tried ]; then
     touch /passphrase-from-usb-tried
     sleep 2
@@ -17,5 +15,4 @@ if ! [ -e /passphrase-from-usb-tried ]; then
         echo "Cannot find passphrase USB drive" >&2
     fi
 fi
-
 /lib/cryptsetup/askpass "Please unlock disk $CRYPTTAB_NAME: "

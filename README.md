@@ -51,8 +51,8 @@ hostname -I
 
 ## Client SSH
 
-On client, update your ssh config according to
-[`ssh_config`](config/ssh_config), replacing `X` with hostname and IP address:
+On client, update your ssh config according to [`ssh_config`](ssh/config),
+replacing `X` with hostname and IP address:
 
 ```bash
 nano ~/.ssh/config
@@ -74,8 +74,8 @@ ssh X
 
 ## Server SSH
 
-Update the SSH config according to [`sshd_config`](config/sshd_config),
-replacing `X`:
+Update the SSH config according to [`sshd_config`](etc/sshd_config), replacing
+`X`:
 
 ```bash
 sudo nano /etc/ssh/sshd_config
@@ -106,6 +106,8 @@ sudo ufw status
 
 ## USB Passphrase
 
+Have you server boot without requiring you to enter disk encryption passphrase.
+
 Insert USB stick. Find USB and encrypted drive:
 
 ```bash
@@ -129,18 +131,18 @@ ls -l /dev/disk/by-id
 ```
 
 In `crypttab`, replace `none` with the ID and append
-`,keyscript=/bin/passphrase-from-usb`.
+`,keyscript=/usr/local/bin/passphrase-from-usb`.
 
 ```bash
 sudo nano /etc/crypttab
 ```
 
 Create the script file according to
-[`passphrase-from-usb`](config/passphrase-from-usb) and make it executable:
+[`passphrase-from-usb`](bin/passphrase-from-usb) and make it executable:
 
 ```bash
-sudo nano /bin/passphrase-from-usb
-sudo chmod 755 /bin/passphrase-from-usb
+sudo nano /usr/local/bin/passphrase-from-usb
+sudo chmod 755 /usr/local/bin/passphrase-from-usb
 ```
 
 Update initramfs:
@@ -157,6 +159,8 @@ sudo shutdown -r now
 
 ## Auto Update OS
 
+Keep your software up to date, automatically.
+
 Set up Unattended Upgrades:
 
 ```bash
@@ -164,19 +168,21 @@ sudo apt install unattended-upgrades
 ```
 
 Update the config according to
-[`50unattended-upgrades`](config/50unattended-upgrades):
+[`50unattended-upgrades`](etc/50unattended-upgrades):
 
 ```bash
 sudo nano /etc/apt/apt.conf.d/50unattended-upgrades
 ```
 
-Create auto-upgrade according to [`20auto-upgrades`](config/20auto-upgrades):
+Create auto-upgrade according to [`20auto-upgrades`](etc/20auto-upgrades):
 
 ```bash
 sudo nano /etc/apt/apt.conf.d/20auto-upgrades
 ```
 
 ## Download Paper
+
+Download Paper and plugins, automatically.
 
 Add `minecraft` user:
 
@@ -185,70 +191,72 @@ sudo groupadd --system minecraft
 sudo useradd --system --gid minecraft --shell /usr/sbin/nologin --home-dir /opt/minecraft minecraft
 ```
 
-Create directories in `/opt`:
+Create home folder in `/opt`:
 
 ```bash
-sudo mkdir /opt/minecraft /opt/minecraft/server /opt/minecraft/server/plugins /opt/minecraft/logs /opt/minecraft/script /opt/minecraft/backup
-sudo chown minecraft.minecraft /opt/minecraft/server /opt/minecraft/server/plugins /opt/minecraft/logs
+sudo mkdir -p /opt/minecraft/server/plugins /opt/minecraft/logs
+sudo chown -R minecraft:minecraft /opt/minecraft
 ```
 
-Create download script according to
-[`download-paper.sh`](script/download-paper.sh):
+Create download script according to [`download-paper`](bin/download-paper):
 
 ```bash
-sudo nano /opt/minecraft/script/download-paper.sh
+sudo nano /usr/local/bin/download-paper
 ```
 
 Make script executable and execute:
 
 ```bash
-sudo chmod +x /opt/minecraft/script/download-paper.sh
-sudo -u minecraft /opt/minecraft/script/download-paper.sh
+sudo chmod +x /usr/local/bin/download-paper
+sudo -u minecraft /usr/local/bin/download-paper
 tail /opt/minecraft/logs/download-paper.log
 ```
 
 ## Paper Service
 
+Set up the Paper server, as a service.
+
 Install screen and openJDK:
 
 ```bash
-sudo apt install screen
-sudo apt install openjdk-17-jre
+sudo apt install screen openjdk-17-jre
 ```
 
-Create service according to [`minecraft.service`](config/minecraft.service):
+Create service according to [`minecraft.service`](etc/minecraft.service):
 
 ```bash
 sudo nano /etc/systemd/system/minecraft.service
 ```
 
-Run the service once and accept the EULA:
+Run the service once and accept the EULA (`eula=true`):
 
 ```bash
 sudo systemctl start minecraft
-sudo nano /opt/minecraft/server/eula.txt
+sudo -u minecraft nano /opt/minecraft/server/eula.txt
 ```
 
 Update server settings according to
-[`server.properties`](config/server.properties):
+[`server.properties`](opt/server.properties):
 
 ```bash
-sudo nano /opt/minecraft/server/server.properties
+sudo -u minecraft nano /opt/minecraft/server/server.properties
 ```
 
-If server.properties was not created, you can debug by running:
+Optionally, if server.properties was not created, you can debug by running:
 
 ```bash
 cd /opt/minecraft/server
 sudo -u minecraft /usr/bin/java -jar paper.jar --nogui
 ```
 
+Make sure to exit (Ctrl+C) before continuing.
+
 Load plugins and update Geyser settings according to
-[`config.yaml`](config/config.yaml):
+[`config.yaml`](opt/config.yaml):
 
 ```bash
 sudo systemctl start minecraft
-sudo nano /opt/minecraft/server/plugins/Geyser-Spigot/config.yml
+sudo -u minecraft nano /opt/minecraft/server/plugins/Geyser-Spigot/config.yml
 ```
 
 Enable and run the service:
@@ -269,28 +277,35 @@ tail /opt/minecraft/server/logs/latest.log
 
 ## Auto Backup Server
 
-Create hourly update script according to
-[`backup-hourly.sh`](script/backup-hourly.sh):
+Make sure to keep backups in case the server gets corrupted or someone destroys
+your precious creation.
+
+Create backup folder in `/opt`:
 
 ```bash
-sudo nano /opt/minecraft/script/backup-hourly.sh
+sudo mkdir -p /opt/minecraft-backup
 ```
 
-Create daily update script according to
-[`backup-daily.sh`](script/backup-daily.sh):
+Create hourly update script according to [`backup-hourly`](bin/backup-hourly):
 
 ```bash
-sudo nano /opt/minecraft/script/backup-daily.sh
+sudo nano /usr/local/bin/backup-hourly
+```
+
+Create daily update script according to [`backup-daily`](bin/backup-daily):
+
+```bash
+sudo nano /usr/local/bin/backup-daily
 ```
 
 Make scripts executable:
 
 ```bash
-sudo chmod +x /opt/minecraft/script/backup-hourly.sh
-sudo chmod +x /opt/minecraft/script/backup-daily.sh
+sudo chmod +x /usr/local/bin/backup-hourly
+sudo chmod +x /usr/local/bin/backup-daily
 ```
 
-Update `crontab` according to [`crontab`](config/crontab):
+Update `crontab` according to [`crontab`](etc/crontab):
 
 ```bash
 sudo crontab -e
@@ -299,25 +314,27 @@ sudo crontab -e
 Test run hourly backup:
 
 ```bash
-sudo /opt/minecraft/script/backup-hourly.sh
+sudo /usr/local/bin/backup-hourly
 tail /opt/minecraft/logs/backup-hourly.log
 ```
 
 ## Auto Update Server
 
-Create update script according to [`update-server.sh`](script/update-server.sh):
+Keep your software up to date, automatically.
+
+Create update script according to [`update-server`](bin/update-server):
 
 ```bash
-sudo nano /opt/minecraft/script/update-server.sh
+sudo nano /usr/local/bin/update-server
 ```
 
 Make script executable:
 
 ```bash
-sudo chmod +x /opt/minecraft/script/update-server.sh
+sudo chmod +x /usr/local/bin/update-server
 ```
 
-Update `crontab` according to [`crontab`](config/crontab):
+Update `crontab` according to [`crontab`](etc/crontab):
 
 ```bash
 sudo crontab -e
@@ -326,7 +343,7 @@ sudo crontab -e
 Test run:
 
 ```bash
-sudo /opt/minecraft/script/update-server.sh
+sudo /usr/local/bin/update-server
 tail /opt/minecraft/logs/update-server.log
 tail /opt/minecraft/logs/backup-daily.log
 systemctl status minecraft
@@ -335,20 +352,6 @@ systemctl status minecraft
 ## Tunneling
 
 If you prefer not to expose the Paper server to the network, use SSH tunneling.
-
-Remove the port from UFW, replacing `X`:
-
-```bash
-sudo ufw delete allow X
-```
-
-Update server port, back to default (25565), see
-[`server.properties-tunnel`](config/server.properties-tunnel):
-
-```bash
-sudo nano /opt/minecraft/server/server.properties
-sudo systemctl restart minecraft
-```
 
 Locally, set up a tunnel:
 
@@ -370,7 +373,7 @@ To allow public key logins, append the public key to authorized keys:
 ```bash
 sudo mkdir /etc/ssh/authorized-keys
 sudo touch /etc/ssh/authorized-keys/mctunnel
-sudo chown mctunnel.mctunnel /etc/ssh/authorized-keys/mctunnel
+sudo chown mctunnel:mctunnel /etc/ssh/authorized-keys/mctunnel
 sudo nano /etc/ssh/authorized-keys/mctunnel
 ```
 
@@ -382,7 +385,7 @@ cat ~/.ssh/id_ed25519.pub
 ```
 
 Update the SSH config according to
-[`sshd_config-tunnel`](config/sshd_config-tunnel), replacing `X`:
+[`sshd_config-tunnel`](etc/sshd_config-tunnel), replacing `X`:
 
 ```bash
 sudo nano /etc/ssh/sshd_config
@@ -396,11 +399,48 @@ ssh -NL 25565:localhost:25565 mctunnel@192.168.X.X
 ```
 
 Optionally, to allow password logins, set a password and update the SSH config
-according to [`sshd_config-passwd`](config/sshd_config-passwd):
+according to [`sshd_config-passwd`](etc/sshd_config-passwd):
 
 ```bash
 sudo passwd mctunnel
 sudo nano /etc/ssh/sshd_config
+```
+
+## Auto Close Port
+
+If you use your minecraft server only intermittently, it might be best to keep
+port 25565 closed by default. The following will auto-close the port at night.
+
+Create close port script according to [`close-port`](bin/close-port):
+
+```bash
+sudo nano /usr/local/bin/close-port
+```
+
+Make script executable:
+
+```bash
+sudo chmod +x /usr/local/bin/close-port
+```
+
+Update `crontab` according to [`crontab`](etc/crontab):
+
+```bash
+sudo crontab -e
+```
+
+Test script:
+
+```bash
+sudo /usr/local/bin/close-port
+tail /opt/minecraft/logs/close-port.log
+sudo ufw status
+```
+
+Open Minecraft port again:
+
+```bash
+sudo ufw allow 25565/tcp 
 ```
 
 ## License

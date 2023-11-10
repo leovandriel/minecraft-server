@@ -4,9 +4,9 @@ exec &>> /opt/minecraft/logs/update-server.log
 echo "$(date -Is): stop"
 systemctl stop minecraft
 echo "$(date -Is): backup"
-sudo /opt/minecraft/script/backup-daily.sh
+sudo /usr/local/bin/backup-daily
 echo "$(date -Is): download"
-sudo -u minecraft /opt/minecraft/script/download-paper.sh
+sudo -u minecraft /usr/local/bin/download-paper
 echo "$(date -Is): start"
 systemctl start minecraft
 echo "$(date -Is): update complete"

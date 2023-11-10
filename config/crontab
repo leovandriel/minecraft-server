@@ -1,2 +1,0 @@
-30 * * * * /opt/minecraft/script/backup-hourly.sh
-5 4 * * * /opt/minecraft/script/update-server.sh
