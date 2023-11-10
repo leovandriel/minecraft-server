@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
-exec &>> /opt/minecraft/logs/update-server.log
-echo "$(date -Is): stop"
+exec &>> /var/log/minecraft.log
+echo "$(date -Is) $(basename "$0"): stop"
 systemctl stop minecraft
-echo "$(date -Is): backup"
+echo "$(date -Is) $(basename "$0"): backup"
 sudo /usr/local/bin/backup-daily
-echo "$(date -Is): download"
+echo "$(date -Is) $(basename "$0"): download"
 sudo -u minecraft /usr/local/bin/download-paper
-echo "$(date -Is): start"
+echo "$(date -Is) $(basename "$0"): start"
 systemctl start minecraft
-echo "$(date -Is): update complete"
+echo "$(date -Is) $(basename "$0"): update complete"

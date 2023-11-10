@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-exec &>> /opt/minecraft/logs/send-ping.log
-echo "$(date -Is): ping"
-wget -O- --post-data "" "https://ping.leovandriel.com/X"
-echo "$(date -Is): pong"
+exec &>> /var/log/minecraft.log
+echo "$(date -Is) $(basename "$0"): ping"
+wget -q -O- --post-data "" "https://ping.leovandriel.com/X"
+echo "$(date -Is) $(basename "$0"): pong"

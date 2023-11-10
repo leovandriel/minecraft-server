@@ -51,7 +51,7 @@ hostname -I
 
 ## Client SSH
 
-On client, update your ssh config according to [`ssh_config`](ssh/config),
+On client, update your ssh config according to [`ssh/config`](ssh/config),
 replacing `X` with hostname and IP address:
 
 ```bash
@@ -194,8 +194,17 @@ sudo useradd --system --gid minecraft --shell /usr/sbin/nologin --home-dir /opt/
 Create home folder in `/opt`:
 
 ```bash
-sudo mkdir -p /opt/minecraft/server/plugins /opt/minecraft/logs
+sudo mkdir -p /opt/minecraft/server/plugins
 sudo chown -R minecraft:minecraft /opt/minecraft
+ls -la /opt/minecraft
+```
+
+Create log file in `/var/log`:
+
+```bash
+sudo touch /var/log/minecraft.log
+sudo chown minecraft:minecraft /var/log/minecraft.log
+ls -la /var/log
 ```
 
 Create download script according to [`download-paper`](bin/download-paper):
@@ -209,7 +218,7 @@ Make script executable and execute:
 ```bash
 sudo chmod +x /usr/local/bin/download-paper
 sudo -u minecraft /usr/local/bin/download-paper
-tail /opt/minecraft/logs/download-paper.log
+tail /var/log/minecraft.log
 ```
 
 ## Paper Service
@@ -228,15 +237,21 @@ Create service according to [`minecraft.service`](etc/minecraft.service):
 sudo nano /etc/systemd/system/minecraft.service
 ```
 
-Run the service once and accept the EULA (`eula=true`):
+Start the service:
 
 ```bash
 sudo systemctl start minecraft
+systemctl status minecraft
+```
+
+Once the service has stopped, accept the EULA (`eula=true`):
+
+```bash
 sudo -u minecraft nano /opt/minecraft/server/eula.txt
 ```
 
 Update server settings according to
-[`server.properties`](opt/server.properties):
+[`server.properties`](opt/server.properties), replacing `X`:
 
 ```bash
 sudo -u minecraft nano /opt/minecraft/server/server.properties
@@ -252,7 +267,7 @@ sudo -u minecraft /usr/bin/java -jar paper.jar --nogui
 Make sure to exit (Ctrl+C) before continuing.
 
 Load plugins and update Geyser settings according to
-[`config.yaml`](opt/config.yaml):
+[`config.yaml`](opt/config.yaml), replacing `X`:
 
 ```bash
 sudo systemctl start minecraft
@@ -267,13 +282,13 @@ sudo systemctl restart minecraft
 systemctl status minecraft
 ```
 
-Inspect the logs and run commands using:
+Inspect the log and run commands using:
 
 ```bash
 sudo -u minecraft screen -R minecraft
-(ctrl+a d)
-tail /opt/minecraft/server/logs/latest.log
 ```
+
+Use `Ctrl+a d` to exit.
 
 ## Auto Backup Server
 
@@ -283,7 +298,7 @@ your precious creation.
 Create backup folder in `/opt`:
 
 ```bash
-sudo mkdir -p /opt/minecraft-backup
+sudo mkdir -p /opt/backup
 ```
 
 Create hourly update script according to [`backup-hourly`](bin/backup-hourly):
@@ -315,7 +330,7 @@ Test run hourly backup:
 
 ```bash
 sudo /usr/local/bin/backup-hourly
-tail /opt/minecraft/logs/backup-hourly.log
+tail /var/log/minecraft.log
 ```
 
 ## Auto Update Server
@@ -344,8 +359,7 @@ Test run:
 
 ```bash
 sudo /usr/local/bin/update-server
-tail /opt/minecraft/logs/update-server.log
-tail /opt/minecraft/logs/backup-daily.log
+tail /var/log/minecraft.log
 systemctl status minecraft
 ```
 
@@ -433,7 +447,7 @@ Test script:
 
 ```bash
 sudo /usr/local/bin/close-port
-tail /opt/minecraft/logs/close-port.log
+tail /var/log/minecraft.log
 sudo ufw status
 ```
 
@@ -471,7 +485,7 @@ Test script:
 
 ```bash
 sudo -u minecraft /usr/local/bin/send-ping
-tail /opt/minecraft/logs/send-ping.log
+tail /var/log/minecraft.log
 ```
 
 Now, you can [https://ping.leovandriel.com/X](https://ping.leovandriel.com/X),
