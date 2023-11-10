@@ -282,13 +282,17 @@ sudo systemctl restart minecraft
 systemctl status minecraft
 ```
 
-Inspect the log and run commands using:
+To view the server log:
+
+```bash
+tail /opt/minecraft/server/logs/latest.log
+```
+
+To run commands (`Ctrl+a d` to exit):
 
 ```bash
 sudo -u minecraft screen -R minecraft
 ```
-
-Use `Ctrl+a d` to exit.
 
 ## Auto Backup Server
 
@@ -490,6 +494,43 @@ tail /var/log/minecraft.log
 
 Now, you can [https://ping.leovandriel.com/X](https://ping.leovandriel.com/X),
 replacing `X`.
+
+## Restore Backup
+
+In case of a calamity, or to test the backup.
+
+*NB: the following will **overwrite** your existing minecraft server folder.
+Make sure you have a backup before continuing.*
+
+First stop the server:
+
+```bash
+sudo systemctl stop minecraft
+```
+
+Extract the tarball, replacing `X`:
+
+```bash
+sudo tar -C / -xvf /opt/backup/X.tar
+sudo tar -C / -xzvf /opt/backup/X.tar.gz
+```
+
+Restart the server:
+
+```bash
+sudo systemctl start minecraft
+systemctl status minecraft
+```
+
+Alternatively, if you have an older backup, and you only want to restore certain
+files, e.g. the world map, you can first extract to `/tmp`:
+
+```bash
+sudo tar -C /tmp -xvf /opt/backup/X.tar
+sudo tar -C /tmp -xzvf /opt/backup/X.tar.gz
+sudo mv /tmp/opt/minecraft/server/X /opt/minecraft/server
+sudo rm -rf /tmp/opt/minecraft
+```
 
 ## License
 
