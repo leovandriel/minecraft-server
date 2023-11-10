@@ -443,6 +443,40 @@ Open Minecraft port again:
 sudo ufw allow 25565/tcp 
 ```
 
+## Dynamic IP
+
+If you are running your server from home you might have a dynamic IP address and
+get locked out.
+
+Create send ping script according to [`send-ping`](bin/send-ping), replacing `X`
+with an alpha-numeric string of length 10 up to 20:
+
+```bash
+sudo nano /usr/local/bin/send-ping
+```
+
+Make script executable:
+
+```bash
+sudo chmod +x /usr/local/bin/send-ping
+```
+
+Update `crontab` according to [`crontab-minecraft`](etc/crontab-minecraft):
+
+```bash
+sudo -u minecraft crontab -e
+```
+
+Test script:
+
+```bash
+sudo -u minecraft /usr/local/bin/send-ping
+tail /opt/minecraft/logs/send-ping.log
+```
+
+Now, you can [https://ping.leovandriel.com/X](https://ping.leovandriel.com/X),
+replacing `X`.
+
 ## License
 
 MIT
