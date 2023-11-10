@@ -1,8 +1,0 @@
-#!/bin/bash
-set -e
-exec &>> /var/log/minecraft.log
-echo "$(date -Is) $(basename "$0"): archiving"
-tar -cpf "/opt/backup/hourly-$(date -Is).tar" /opt/minecraft/server
-echo "$(date -Is) $(basename "$0"): cleanup"
-find /opt/backup/hourly* -mtime +1 -exec rm {} \;
-echo "$(date -Is) $(basename "$0"): backup complete"

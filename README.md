@@ -11,9 +11,10 @@ Features:
 - Java: OpenJDK JRE
 - Auto update OS
 - Auto update server
-- Auto local backup
-- Logs
+- Auto local snapshot
 - Encrypted drive with USB unlock
+- Remote lookup of dynamic IP
+- Logs
 
 ## Bootable USB
 
@@ -90,7 +91,8 @@ systemctl status sshd
 
 ## Firewall
 
-Set up UFW firewall, with ssh and Minecraft server ports (25565 for Java Edition, 19132:19133 for Bedrock):
+Set up UFW firewall, with ssh and Minecraft server ports (25565 for Java
+Edition, 19132:19133 for Bedrock):
 
 ```bash
 sudo apt update && sudo apt upgrade
@@ -295,34 +297,34 @@ To run commands (`Ctrl+a d` to exit):
 sudo -u minecraft screen -R minecraft
 ```
 
-## Auto Backup Server
+## Auto Snapshot Server
 
-Make sure to keep backups in case the server gets corrupted or someone destroys
-your precious creation.
+Make sure to keep a shapshot of the server folder in case the server gets
+corrupted or someone destroys your precious creation.
 
-Create backup folder in `/opt`:
+Create snapshot folder in `/opt`:
 
 ```bash
-sudo mkdir -p /opt/backup
+sudo mkdir -p /opt/snapshot
 ```
 
-Create hourly update script according to [`backup-hourly`](bin/backup-hourly):
+Create hourly update script according to [`snapshot-hourly`](bin/snapshot-hourly):
 
 ```bash
-sudo nano /usr/local/bin/backup-hourly
+sudo nano /usr/local/bin/snapshot-hourly
 ```
 
-Create daily update script according to [`backup-daily`](bin/backup-daily):
+Create daily update script according to [`snapshot-daily`](bin/snapshot-daily):
 
 ```bash
-sudo nano /usr/local/bin/backup-daily
+sudo nano /usr/local/bin/snapshot-daily
 ```
 
 Make scripts executable:
 
 ```bash
-sudo chmod +x /usr/local/bin/backup-hourly
-sudo chmod +x /usr/local/bin/backup-daily
+sudo chmod +x /usr/local/bin/snapshot-hourly
+sudo chmod +x /usr/local/bin/snapshot-daily
 ```
 
 Update `crontab` according to [`crontab`](etc/crontab):
@@ -331,10 +333,10 @@ Update `crontab` according to [`crontab`](etc/crontab):
 sudo crontab -e
 ```
 
-Test run hourly backup:
+Test run hourly snapshot:
 
 ```bash
-sudo /usr/local/bin/backup-hourly
+sudo /usr/local/bin/snapshot-hourly
 tail /var/log/minecraft.log
 ```
 
@@ -428,7 +430,8 @@ sudo nano /etc/ssh/sshd_config
 ## Auto Close Port
 
 If you use your minecraft server only intermittently, it might be best to keep
-minecraft ports closed by default. The following will auto-close the port at night.
+minecraft ports closed by default. The following will auto-close the port at
+night.
 
 Create close port script according to [`close-port`](bin/close-port):
 
@@ -470,7 +473,7 @@ If you are running your server from home you might have a dynamic IP address and
 get locked out.
 
 Create send ping script according to [`send-ping`](bin/send-ping), replacing `X`
-with an alpha-numeric string of length 10 up to 20:
+with a unique url-safe base64 key between 11 and 22 characters:
 
 ```bash
 sudo nano /usr/local/bin/send-ping
@@ -498,9 +501,9 @@ tail /var/log/minecraft.log
 Now, you can [https://ping.leovandriel.com/X](https://ping.leovandriel.com/X),
 replacing `X`.
 
-## Restore Backup
+## Restore Snapshot
 
-In case of a calamity, or to test the backup.
+In case of a calamity, or to test the snapshot.
 
 *NB: the following will **overwrite** your existing minecraft server folder.
 Make sure you have a backup before continuing.*
@@ -514,8 +517,8 @@ sudo systemctl stop minecraft
 Extract the tarball, replacing `X`:
 
 ```bash
-sudo tar -C / -xvf /opt/backup/X.tar
-sudo tar -C / -xzvf /opt/backup/X.tar.gz
+sudo tar -C / -xvf /opt/snapshot/X.tar
+sudo tar -C / -xzvf /opt/snapshot/X.tar.gz
 ```
 
 Restart the server:
@@ -529,8 +532,8 @@ Alternatively, if you have an older backup, and you only want to restore certain
 files, e.g. the world map, you can first extract to `/tmp`:
 
 ```bash
-sudo tar -C /tmp -xvf /opt/backup/X.tar
-sudo tar -C /tmp -xzvf /opt/backup/X.tar.gz
+sudo tar -C /tmp -xvf /opt/snapshot/X.tar
+sudo tar -C /tmp -xzvf /opt/snapshot/X.tar.gz
 sudo mv /tmp/opt/minecraft/server/X /opt/minecraft/server
 sudo rm -rf /tmp/opt/minecraft
 ```
