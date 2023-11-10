@@ -90,7 +90,7 @@ systemctl status sshd
 
 ## Firewall
 
-Set up UFW firewall, with ssh and Minecraft server ports:
+Set up UFW firewall, with ssh and Minecraft server ports (25565 for Java Edition, 19132:19133 for Bedrock):
 
 ```bash
 sudo apt update && sudo apt upgrade
@@ -98,8 +98,9 @@ sudo apt install ufw
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow ssh
-sudo ufw allow 25565
-sudo ufw allow 19132
+sudo ufw allow 25565/tcp
+sudo ufw allow 19132:19133/tcp
+sudo ufw allow 19132:19133/udp
 sudo ufw enable
 sudo ufw status
 ```
@@ -427,7 +428,7 @@ sudo nano /etc/ssh/sshd_config
 ## Auto Close Port
 
 If you use your minecraft server only intermittently, it might be best to keep
-port 25565 closed by default. The following will auto-close the port at night.
+minecraft ports closed by default. The following will auto-close the port at night.
 
 Create close port script according to [`close-port`](bin/close-port):
 
@@ -459,6 +460,8 @@ Open Minecraft port again:
 
 ```bash
 sudo ufw allow 25565/tcp 
+sudo ufw allow 19132:19133/tcp
+sudo ufw allow 19132:19133/udp
 ```
 
 ## Dynamic IP
