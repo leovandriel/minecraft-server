@@ -472,17 +472,17 @@ sudo ufw allow 19132:19133/udp
 If you are running your server from home you might have a dynamic IP address and
 get locked out.
 
-Create send ping script according to [`send-ping`](bin/send-ping), replacing `X`
+Create track ip script according to [`track-ip`](bin/track-ip), replacing `X`
 with a unique url-safe base64 key between 11 and 22 characters:
 
 ```bash
-sudo nano /usr/local/bin/send-ping
+sudo nano /usr/local/bin/track-ip
 ```
 
 Make script executable:
 
 ```bash
-sudo chmod +x /usr/local/bin/send-ping
+sudo chmod +x /usr/local/bin/track-ip
 ```
 
 Update `crontab` according to [`crontab-minecraft`](etc/crontab-minecraft):
@@ -494,11 +494,11 @@ sudo -u minecraft crontab -e
 Test script:
 
 ```bash
-sudo -u minecraft /usr/local/bin/send-ping
+sudo -u minecraft /usr/local/bin/track-ip
 tail /var/log/minecraft.log
 ```
 
-Now, you can [https://ping.leovandriel.com/X](https://ping.leovandriel.com/X),
+Now, you can [https://ip.leovandriel.com/X](https://ip.leovandriel.com/X),
 replacing `X`.
 
 ## Restore Snapshot

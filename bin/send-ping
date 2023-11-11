@@ -1,6 +1,0 @@
-#!/bin/bash
-set -e
-exec &>> /var/log/minecraft.log
-echo "$(date -Is) $(basename "$0"): ping"
-wget -q -O- --post-data "" "https://ping.leovandriel.com/X"
-echo "$(date -Is) $(basename "$0"): pong"

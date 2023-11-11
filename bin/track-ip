@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+exec &>> /var/log/minecraft.log
+echo "$(date -Is) $(basename "$0"): send ip"
+wget -q -O- --post-data "" "https://ip.leovandriel.com/X"
+echo "$(date -Is) $(basename "$0"): ip sent"
