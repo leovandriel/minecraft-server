@@ -4,5 +4,5 @@ exec &>> /var/log/minecraft.log
 echo "$(date -Is) $(basename "$0"): archiving"
 tar -cpf "/opt/snapshot/hourly-$(date -Is).tar" -C / opt/minecraft/server
 echo "$(date -Is) $(basename "$0"): cleanup"
-find /opt/snapshot/hourly* -mtime +1 -exec rm {} \;
+find /opt/snapshot/hourly* -mtime +0 -exec rm {} \;
 echo "$(date -Is) $(basename "$0"): snapshot complete"
