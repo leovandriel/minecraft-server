@@ -100,11 +100,19 @@ sudo apt install ufw
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow ssh
+sudo ufw allow proto tcp from 192.168.0.0/16 to any port 25565
+sudo ufw allow proto tcp from 192.168.0.0/16 to any port 19132:19133
+sudo ufw allow proto udp from 192.168.0.0/16 to any port 19132:19133
+sudo ufw enable
+sudo ufw status
+```
+
+Additionally, if you want to make the server accessible outside of your network:
+
+```bash
 sudo ufw allow 25565/tcp
 sudo ufw allow 19132:19133/tcp
 sudo ufw allow 19132:19133/udp
-sudo ufw enable
-sudo ufw status
 ```
 
 ## USB Passphrase
