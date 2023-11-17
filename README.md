@@ -547,6 +547,44 @@ sudo mv /tmp/opt/minecraft/server/X /opt/minecraft/server
 sudo rm -rf /tmp/opt/minecraft
 ```
 
+## CLI Client
+
+Don't want to run the slow and bulky Minecraft Launcher?
+
+On your client, install [portablemc](https://github.com/mindstorm38/portablemc)
+and launch directly into server, replacing `X`:
+
+```shell
+pip install --user portablemc
+portablemc start --login X@X.com --server 192.168.X.X
+```
+
+Or if you prefer to keep it completely contained with one folder:
+
+```shell
+mkdir ~/minecraft
+cd ~/minecraft
+python3 -m venv venv
+source ./venv/bin/activate
+pip install --upgrade pip
+pip install portablemc
+deactivate
+touch launch
+chmod +x launch
+nano launch
+```
+
+And paste the following, replacing `X`:
+
+```bash
+#!/bin/bash
+set -e
+source ./venv/bin/activate
+portablemc --main-dir ./main --work-dir ./work start --login X@X.com --server 192.168.X.X
+```
+
+And launch right into the server with `./launch`.
+
 ## License
 
 MIT
