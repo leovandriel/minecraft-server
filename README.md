@@ -26,7 +26,7 @@ First step is creating a bootable USB to do a fresh install of Debian.
 - Determine the name of the USB drive, something of the kind `/dev/diskX`
 - Copy the image, replacing `X`:
 
-```bash
+```shell
 sudo dd if=debian-X-X-netinst.iso of=/dev/diskX bs=1024k status=progress
 ```
 
@@ -43,7 +43,7 @@ Boot of the USB and follow instructions. Do:
 
 On server, get the fingerprint of the public key and the IP address:
 
-```bash
+```shell
 ssh-keygen -E md5 -lf /etc/ssh/ssh_host_rsa_key.pub
 ssh-keygen -E md5 -lf /etc/ssh/ssh_host_ecdsa_key.pub
 ssh-keygen -E md5 -lf /etc/ssh/ssh_host_ed25519_key.pub
@@ -55,19 +55,19 @@ hostname -I
 On client, update your ssh config according to [`ssh/config`](ssh/config),
 replacing `X` with hostname and IP address:
 
-```bash
+```shell
 nano ~/.ssh/config
 ```
 
 Copy SSH key, replacing `X` with hostname:
 
-```bash
+```shell
 ssh-copy-id X
 ```
 
 SSH into server using private key, replacing `X` with hostname:
 
-```bash
+```shell
 ssh X
 ```
 
@@ -78,13 +78,13 @@ ssh X
 Update the SSH config according to [`sshd_config`](etc/sshd_config), replacing
 `X`:
 
-```bash
+```shell
 sudo nano /etc/ssh/sshd_config
 ```
 
 Restart SSH service:
 
-```bash
+```shell
 sudo systemctl restart sshd
 systemctl status sshd
 ```
@@ -94,7 +94,7 @@ systemctl status sshd
 Set up UFW firewall, with ssh and Minecraft server ports (25565 for Java
 Edition, 19132:19133 for Bedrock):
 
-```bash
+```shell
 sudo apt update && sudo apt upgrade
 sudo apt install ufw
 sudo ufw default deny incoming
@@ -109,7 +109,7 @@ sudo ufw status
 
 Additionally, if you want to make the server accessible outside of your network:
 
-```bash
+```shell
 sudo ufw allow 25565/tcp
 sudo ufw allow 19132:19133/tcp
 sudo ufw allow 19132:19133/udp
@@ -121,14 +121,14 @@ Have you server boot without requiring you to enter disk encryption passphrase.
 
 Insert USB stick. Find USB and encrypted drive:
 
-```bash
+```shell
 lsblk
 ```
 
 Create a random passphrase, write it to USB, and add it to LUKS, replacing `X`
 according to the above listing:
 
-```bash
+```shell
 head -c 256 /dev/urandom > passphrase
 sudo dd if=passphrase of=/dev/sdX bs=1
 sudo cryptsetup luksAddKey /dev/sdaX passphrase
@@ -137,34 +137,34 @@ rm passphrase
 
 Find the `id` of the USB drive:
 
-```bash
+```shell
 ls -l /dev/disk/by-id
 ```
 
 In `crypttab`, replace `none` with the ID and append
 `,keyscript=/usr/local/bin/passphrase-from-usb`.
 
-```bash
+```shell
 sudo nano /etc/crypttab
 ```
 
 Create the script file according to
 [`passphrase-from-usb`](bin/passphrase-from-usb) and make it executable:
 
-```bash
+```shell
 sudo nano /usr/local/bin/passphrase-from-usb
 sudo chmod 755 /usr/local/bin/passphrase-from-usb
 ```
 
 Update initramfs:
 
-```bash
+```shell
 sudo update-initramfs -u
 ```
 
 Restart the system to confirm change:
 
-```bash
+```shell
 sudo shutdown -r now
 ```
 
@@ -174,20 +174,20 @@ Keep your software up to date, automatically.
 
 Set up Unattended Upgrades:
 
-```bash
+```shell
 sudo apt install unattended-upgrades
 ```
 
 Update the config according to
 [`50unattended-upgrades`](etc/50unattended-upgrades):
 
-```bash
+```shell
 sudo nano /etc/apt/apt.conf.d/50unattended-upgrades
 ```
 
 Create auto-upgrade according to [`20auto-upgrades`](etc/20auto-upgrades):
 
-```bash
+```shell
 sudo nano /etc/apt/apt.conf.d/20auto-upgrades
 ```
 
@@ -197,14 +197,14 @@ Download Paper and plugins, automatically.
 
 Add `minecraft` user:
 
-```bash
+```shell
 sudo groupadd --system minecraft
 sudo useradd --system --gid minecraft --shell /usr/sbin/nologin --home-dir /opt/minecraft minecraft
 ```
 
 Create home folder in `/opt`:
 
-```bash
+```shell
 sudo mkdir -p /opt/minecraft/server/plugins
 sudo chown -R minecraft:minecraft /opt/minecraft
 ls -la /opt/minecraft
@@ -212,7 +212,7 @@ ls -la /opt/minecraft
 
 Create log file in `/var/log`:
 
-```bash
+```shell
 sudo touch /var/log/minecraft.log
 sudo chown minecraft:minecraft /var/log/minecraft.log
 ls -la /var/log
@@ -220,13 +220,13 @@ ls -la /var/log
 
 Create download script according to [`download-paper`](bin/download-paper):
 
-```bash
+```shell
 sudo nano /usr/local/bin/download-paper
 ```
 
 Make script executable and execute:
 
-```bash
+```shell
 sudo chmod +x /usr/local/bin/download-paper
 sudo -u minecraft /usr/local/bin/download-paper
 tail /var/log/minecraft.log
@@ -238,39 +238,39 @@ Set up the Paper server, as a service.
 
 Install screen and openJDK:
 
-```bash
+```shell
 sudo apt install screen openjdk-17-jre
 ```
 
 Create service according to [`minecraft.service`](etc/minecraft.service):
 
-```bash
+```shell
 sudo nano /etc/systemd/system/minecraft.service
 ```
 
 Start the service:
 
-```bash
+```shell
 sudo systemctl start minecraft
 systemctl status minecraft
 ```
 
 Once the service has stopped, accept the EULA (`eula=true`):
 
-```bash
+```shell
 sudo -u minecraft nano /opt/minecraft/server/eula.txt
 ```
 
 Update server settings according to
 [`server.properties`](opt/server.properties), replacing `X`:
 
-```bash
+```shell
 sudo -u minecraft nano /opt/minecraft/server/server.properties
 ```
 
 Optionally, if server.properties was not created, you can debug by running:
 
-```bash
+```shell
 cd /opt/minecraft/server
 sudo -u minecraft /usr/bin/java -jar paper.jar --nogui
 ```
@@ -280,14 +280,14 @@ Make sure to exit (Ctrl+C) before continuing.
 Load plugins and update Geyser settings according to
 [`config.yaml`](opt/config.yaml), replacing `X`:
 
-```bash
+```shell
 sudo systemctl start minecraft
 sudo -u minecraft nano /opt/minecraft/server/plugins/Geyser-Spigot/config.yml
 ```
 
 Enable and run the service:
 
-```bash
+```shell
 sudo systemctl enable minecraft
 sudo systemctl restart minecraft
 systemctl status minecraft
@@ -295,13 +295,13 @@ systemctl status minecraft
 
 To view the server log:
 
-```bash
+```shell
 tail /opt/minecraft/server/logs/latest.log
 ```
 
 To run commands (`Ctrl+a d` to exit):
 
-```bash
+```shell
 sudo -u minecraft screen -R minecraft
 ```
 
@@ -312,38 +312,39 @@ corrupted or someone destroys your precious creation.
 
 Create snapshot folder in `/opt`:
 
-```bash
+```shell
 sudo mkdir -p /opt/snapshot
 ```
 
-Create hourly update script according to [`snapshot-hourly`](bin/snapshot-hourly):
+Create hourly update script according to
+[`snapshot-hourly`](bin/snapshot-hourly):
 
-```bash
+```shell
 sudo nano /usr/local/bin/snapshot-hourly
 ```
 
 Create daily update script according to [`snapshot-daily`](bin/snapshot-daily):
 
-```bash
+```shell
 sudo nano /usr/local/bin/snapshot-daily
 ```
 
 Make scripts executable:
 
-```bash
+```shell
 sudo chmod +x /usr/local/bin/snapshot-hourly
 sudo chmod +x /usr/local/bin/snapshot-daily
 ```
 
 Update `crontab` according to [`crontab`](etc/crontab):
 
-```bash
+```shell
 sudo crontab -e
 ```
 
 Test run hourly snapshot:
 
-```bash
+```shell
 sudo /usr/local/bin/snapshot-hourly
 tail /var/log/minecraft.log
 ```
@@ -354,25 +355,25 @@ Keep your software up to date, automatically.
 
 Create update script according to [`update-server`](bin/update-server):
 
-```bash
+```shell
 sudo nano /usr/local/bin/update-server
 ```
 
 Make script executable:
 
-```bash
+```shell
 sudo chmod +x /usr/local/bin/update-server
 ```
 
 Update `crontab` according to [`crontab`](etc/crontab):
 
-```bash
+```shell
 sudo crontab -e
 ```
 
 Test run:
 
-```bash
+```shell
 sudo /usr/local/bin/update-server
 tail /var/log/minecraft.log
 systemctl status minecraft
@@ -384,7 +385,7 @@ If you prefer not to expose the Paper server to the network, use SSH tunneling.
 
 Locally, set up a tunnel:
 
-```bash
+```shell
 ssh -NL 25565:localhost:25565 192.168.X.X
 ```
 
@@ -392,14 +393,14 @@ You can now connect to the server using the address `localhost`.
 
 To allow others to connect, create a new system user:
 
-```bash
+```shell
 sudo groupadd --system mctunnel
 sudo useradd --system --gid mctunnel --shell /usr/sbin/nologin mctunnel
 ```
 
 To allow public key logins, append the public key to authorized keys:
 
-```bash
+```shell
 sudo mkdir /etc/ssh/authorized-keys
 sudo touch /etc/ssh/authorized-keys/mctunnel
 sudo chown mctunnel:mctunnel /etc/ssh/authorized-keys/mctunnel
@@ -408,7 +409,7 @@ sudo nano /etc/ssh/authorized-keys/mctunnel
 
 Client-side, an SSH key can be generated and installed:
 
-```bash
+```shell
 ssh-keygen -t ed25519
 cat ~/.ssh/id_ed25519.pub
 ```
@@ -416,21 +417,21 @@ cat ~/.ssh/id_ed25519.pub
 Update the SSH config according to
 [`sshd_config-tunnel`](etc/sshd_config-tunnel), replacing `X`:
 
-```bash
+```shell
 sudo nano /etc/ssh/sshd_config
 sudo systemctl restart ssh
 ```
 
 Others can now set up a tunnel:
 
-```bash
+```shell
 ssh -NL 25565:localhost:25565 mctunnel@192.168.X.X
 ```
 
 Optionally, to allow password logins, set a password and update the SSH config
 according to [`sshd_config-passwd`](etc/sshd_config-passwd):
 
-```bash
+```shell
 sudo passwd mctunnel
 sudo nano /etc/ssh/sshd_config
 ```
@@ -443,25 +444,25 @@ night.
 
 Create close port script according to [`close-port`](bin/close-port):
 
-```bash
+```shell
 sudo nano /usr/local/bin/close-port
 ```
 
 Make script executable:
 
-```bash
+```shell
 sudo chmod +x /usr/local/bin/close-port
 ```
 
 Update `crontab` according to [`crontab`](etc/crontab):
 
-```bash
+```shell
 sudo crontab -e
 ```
 
 Test script:
 
-```bash
+```shell
 sudo /usr/local/bin/close-port
 tail /var/log/minecraft.log
 sudo ufw status
@@ -469,7 +470,7 @@ sudo ufw status
 
 Open Minecraft port again:
 
-```bash
+```shell
 sudo ufw allow 25565/tcp 
 sudo ufw allow 19132:19133/tcp
 sudo ufw allow 19132:19133/udp
@@ -483,25 +484,25 @@ get locked out.
 Create track ip script according to [`track-ip`](bin/track-ip), replacing `X`
 with a unique url-safe base64 key between 11 and 22 characters:
 
-```bash
+```shell
 sudo nano /usr/local/bin/track-ip
 ```
 
 Make script executable:
 
-```bash
+```shell
 sudo chmod +x /usr/local/bin/track-ip
 ```
 
 Update `crontab` according to [`crontab-minecraft`](etc/crontab-minecraft):
 
-```bash
+```shell
 sudo -u minecraft crontab -e
 ```
 
 Test script:
 
-```bash
+```shell
 sudo -u minecraft /usr/local/bin/track-ip
 tail /var/log/minecraft.log
 ```
@@ -518,20 +519,20 @@ Make sure you have a backup before continuing.*
 
 First stop the server:
 
-```bash
+```shell
 sudo systemctl stop minecraft
 ```
 
 Extract the tarball, replacing `X`:
 
-```bash
+```shell
 sudo tar -C / -xvf /opt/snapshot/X.tar
 sudo tar -C / -xzvf /opt/snapshot/X.tar.gz
 ```
 
 Restart the server:
 
-```bash
+```shell
 sudo systemctl start minecraft
 systemctl status minecraft
 ```
@@ -539,7 +540,7 @@ systemctl status minecraft
 Alternatively, if you have an older backup, and you only want to restore certain
 files, e.g. the world map, you can first extract to `/tmp`:
 
-```bash
+```shell
 sudo tar -C /tmp -xvf /opt/snapshot/X.tar
 sudo tar -C /tmp -xzvf /opt/snapshot/X.tar.gz
 sudo mv /tmp/opt/minecraft/server/X /opt/minecraft/server
