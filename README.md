@@ -556,7 +556,7 @@ and launch directly into server, replacing `X`:
 
 ```shell
 pip install --user portablemc
-portablemc start --login X@X.com --server 192.168.X.X
+portablemc start --username X --server 192.168.X.X
 ```
 
 Or if you prefer to keep it completely contained with one folder:
@@ -580,7 +580,7 @@ And paste the following, replacing `X`:
 #!/bin/bash
 set -e
 source ./venv/bin/activate
-portablemc --main-dir ./main --work-dir ./work start --login X@X.com --server 192.168.X.X
+portablemc --main-dir ./main --work-dir ./work start --username X --server 192.168.X.X
 ```
 
 And launch right into the server with `./launch`.
