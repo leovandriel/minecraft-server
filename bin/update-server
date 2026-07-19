@@ -1,12 +1,42 @@
 #!/bin/bash
-set -e
-exec &>> /var/log/minecraft.log
-echo "$(date -Is) $(basename "$0"): stop"
+set -eu
+
+server_directory="/srv/minecraft"
+paper_jar="$server_directory/paper.jar"
+staged_jar="$server_directory/paper.jar.new"
+previous_jar="$server_directory/paper.jar.previous"
+
+log() {
+    echo "$(date -Is) $(basename "$0"): $*"
+}
+
+exec >> /var/log/minecraft-maintenance.log 2>&1
+
+log "checking for the latest eligible Paper release"
+/usr/local/sbin/download-paper
+
+if [ ! -f "$staged_jar" ]; then
+    log "no update available"
+    exit 0
+fi
+
+log "stopping Minecraft"
 systemctl stop minecraft
-echo "$(date -Is) $(basename "$0"): snapshot"
-sudo /usr/local/bin/snapshot-daily
-echo "$(date -Is) $(basename "$0"): download"
-sudo -u minecraft /usr/local/bin/download-paper
-echo "$(date -Is) $(basename "$0"): start"
+
+log "creating pre-update snapshot"
+if ! /usr/local/sbin/snapshot-daily; then
+    log "snapshot failed; restarting the existing server"
+    systemctl start minecraft
+    exit 1
+fi
+
+log "installing staged Paper release"
+if [ -f "$paper_jar" ]; then
+    mv -f "$paper_jar" "$previous_jar"
+fi
+mv -f "$staged_jar" "$paper_jar"
+chown minecraft:minecraft "$paper_jar"
+
+log "starting Minecraft"
 systemctl start minecraft
-echo "$(date -Is) $(basename "$0"): update complete"
+log "update complete"

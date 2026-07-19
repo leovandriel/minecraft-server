@@ -1,14 +1,93 @@
 #!/bin/bash
-set -e
-exec &>> /var/log/minecraft.log
-echo "$(date -Is) $(basename "$0"): fetch version"
-version="$(wget -q -O- "https://api.papermc.io/v2/projects/paper" | sed -n "s/^.*\"\([0-9.]*\)\"]}$/\1/p")"
-echo "$(date -Is) $(basename "$0"): fetch build for $version"
-build="$(wget -q -O- "https://api.papermc.io/v2/projects/paper/versions/$version" | sed -n "s/^.*,\([0-9]*\)]}$/\1/p")"
-echo "$(date -Is) $(basename "$0"): download binary for $build"
-wget -q -O /opt/minecraft/server/paper.jar "https://api.papermc.io/v2/projects/paper/versions/$version/builds/$build/downloads/paper-$version-$build.jar"
-echo "$(date -Is) $(basename "$0"): download geyser"
-wget -q -O /opt/minecraft/server/plugins/Geyser-Spigot.jar "https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest/downloads/spigot"
-echo "$(date -Is) $(basename "$0"): download floodgate"
-wget -q -O /opt/minecraft/server/plugins/Floodgate-Spigot.jar "https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/spigot"
-echo "$(date -Is) $(basename "$0"): download complete"
+set -eu
+
+server_directory="/srv/minecraft"
+paper_jar="$server_directory/paper.jar"
+staged_jar="$server_directory/paper.jar.new"
+user_agent="minecraft-server/1.0 (https://github.com/leovandriel/minecraft-server)"
+api_url="https://fill.papermc.io/v3/projects/paper"
+
+log() {
+    echo "$(date -Is) $(basename "$0"): $*"
+}
+
+exec >> /var/log/minecraft-maintenance.log 2>&1
+rm -f "$staged_jar"
+
+log "fetching available Paper versions"
+versions="$(
+    curl --fail --silent --show-error \
+        -H "User-Agent: $user_agent" \
+        "$api_url" |
+        jq -r '.versions[][]' |
+        sort -V -r
+)"
+
+version=""
+channel=""
+download_url=""
+expected_sha256=""
+
+for candidate in $versions; do
+    case "$candidate" in
+        *-*) continue ;;
+    esac
+
+    builds="$(
+        curl --fail --silent --show-error \
+            -H "User-Agent: $user_agent" \
+            "$api_url/versions/$candidate/builds"
+    )"
+
+    selected_build="$(
+        printf '%s' "$builds" |
+            jq -c '
+                first(.[] | select(.channel == "STABLE")) //
+                first(.[] | select(.channel == "BETA")) //
+                empty
+            '
+    )"
+
+    if [ -n "$selected_build" ]; then
+        version="$candidate"
+        channel="$(printf '%s' "$selected_build" | jq -r '.channel')"
+        download_url="$(printf '%s' "$selected_build" | jq -r '.downloads."server:default".url')"
+        expected_sha256="$(printf '%s' "$selected_build" | jq -r '.downloads."server:default".checksums.sha256')"
+        break
+    fi
+done
+
+if [ -z "$download_url" ] || [ -z "$expected_sha256" ]; then
+    log "no stable or beta Paper build found"
+    exit 1
+fi
+
+if [ -f "$paper_jar" ]; then
+    current_sha256="$(sha256sum "$paper_jar" | awk '{print $1}')"
+    if [ "$current_sha256" = "$expected_sha256" ]; then
+        log "Paper $version ($channel) is already current"
+        exit 0
+    fi
+fi
+
+temporary_jar="$(mktemp "$server_directory/.paper.jar.XXXXXX")"
+trap 'rm -f "$temporary_jar"' EXIT
+
+log "downloading Paper $channel for Minecraft $version"
+curl --fail --location --silent --show-error \
+    -H "User-Agent: $user_agent" \
+    -o "$temporary_jar" \
+    "$download_url"
+
+actual_sha256="$(sha256sum "$temporary_jar" | awk '{print $1}')"
+if [ "$actual_sha256" != "$expected_sha256" ]; then
+    log "checksum verification failed"
+    exit 1
+fi
+
+chown minecraft:minecraft "$temporary_jar"
+chmod 0644 "$temporary_jar"
+mv -f "$temporary_jar" "$staged_jar"
+trap - EXIT
+
+log "staged Paper $version ($channel) at $staged_jar"

@@ -1,8 +1,42 @@
 #!/bin/bash
-set -e
-exec &>> /var/log/minecraft.log
-echo "$(date -Is) $(basename "$0"): archiving"
-tar -czpf "/opt/snapshot/daily-$(date -Is).tar.gz" -C / opt/minecraft/server
-echo "$(date -Is) $(basename "$0"): cleanup"
-find /opt/snapshot/daily* -mtime +30 -exec rm {} \;
-echo "$(date -Is) $(basename "$0"): snapshot complete"
+set -eu
+
+backup_directory="/var/backups/minecraft"
+timestamp="$(date +%Y-%m-%dT%H-%M-%S)"
+archive="$backup_directory/daily-$timestamp.tar.gz"
+server_was_running=false
+
+log() {
+    echo "$(date -Is) $(basename "$0"): $*"
+}
+
+send_command() {
+    runuser -u minecraft -- \
+        screen -p 0 -S minecraft -X eval "stuff \"$1\"\\015"
+}
+
+resume_saving() {
+    if [ "$server_was_running" = true ]; then
+        send_command "save-on" || true
+    fi
+}
+
+exec >> /var/log/minecraft-maintenance.log 2>&1
+trap resume_saving EXIT
+
+if systemctl is-active --quiet minecraft; then
+    server_was_running=true
+    log "flushing world data"
+    send_command "save-off"
+    send_command "save-all flush"
+    sleep 5
+fi
+
+log "creating $archive"
+tar -czpf "$archive" -C / srv/minecraft
+
+log "removing daily snapshots older than 30 days"
+find "$backup_directory" -maxdepth 1 \
+    -type f -name 'daily-*.tar.gz' -mtime +30 -delete
+
+log "snapshot complete"

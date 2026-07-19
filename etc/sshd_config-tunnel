@@ -1,9 +1,10 @@
-AllowUsers X mctunnel
-
 Match User mctunnel
     PasswordAuthentication no
+    AuthenticationMethods publickey
+    AllowTcpForwarding local
     PermitOpen localhost:25565
     X11Forwarding no
     AllowAgentForwarding no
+    PermitTTY no
     ForceCommand /bin/false
     AuthorizedKeysFile /etc/ssh/authorized-keys/%u

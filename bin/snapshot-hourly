@@ -1,8 +1,42 @@
 #!/bin/bash
-set -e
-exec &>> /var/log/minecraft.log
-echo "$(date -Is) $(basename "$0"): archiving"
-tar -cpf "/opt/snapshot/hourly-$(date -Is).tar" -C / opt/minecraft/server
-echo "$(date -Is) $(basename "$0"): cleanup"
-find /opt/snapshot/hourly* -mtime +0 -exec rm {} \;
-echo "$(date -Is) $(basename "$0"): snapshot complete"
+set -eu
+
+backup_directory="/var/backups/minecraft"
+timestamp="$(date +%Y-%m-%dT%H-%M-%S)"
+archive="$backup_directory/hourly-$timestamp.tar"
+server_was_running=false
+
+log() {
+    echo "$(date -Is) $(basename "$0"): $*"
+}
+
+send_command() {
+    runuser -u minecraft -- \
+        screen -p 0 -S minecraft -X eval "stuff \"$1\"\\015"
+}
+
+resume_saving() {
+    if [ "$server_was_running" = true ]; then
+        send_command "save-on" || true
+    fi
+}
+
+exec >> /var/log/minecraft-maintenance.log 2>&1
+trap resume_saving EXIT
+
+if systemctl is-active --quiet minecraft; then
+    server_was_running=true
+    log "flushing world data"
+    send_command "save-off"
+    send_command "save-all flush"
+    sleep 5
+fi
+
+log "creating $archive"
+tar -cpf "$archive" -C / srv/minecraft
+
+log "removing hourly snapshots older than one day"
+find "$backup_directory" -maxdepth 1 \
+    -type f -name 'hourly-*.tar' -mmin +1440 -delete
+
+log "snapshot complete"
