@@ -13,7 +13,7 @@ This setup is intentionally simple:
 - systemd and `screen`
 - Hourly and daily local snapshots
 - Weekly automatic Paper updates
-- Debian unattended upgrades
+- Debian and Java unattended upgrades
 
 The server files and worlds live in `/srv/minecraft`. Backups live in
 `/var/backups/minecraft`.
@@ -39,8 +39,14 @@ echo "deb [signed-by=/usr/share/keyrings/corretto-keyring.gpg] https://apt.corre
 
 sudo apt update
 sudo apt install java-25-amazon-corretto-jdk libxi6 libxtst6 libxrender1
+sudo install -m 0644 etc/apt/apt.conf.d/98unattended-upgrades-corretto \
+  /etc/apt/apt.conf.d/98unattended-upgrades-corretto
 java -version
 ```
+
+The final drop-in permits `unattended-upgrades` to install signed packages from
+the Corretto repository. Paper continues using the installed Java major version;
+moving to a new Java major remains an explicit README change.
 
 ## Create the service account and directories
 
@@ -243,22 +249,17 @@ recovery point if a new Minecraft release changes the world format. If a future
 Paper release requires a newer Java major version, update Java manually before
 that Paper update can start successfully.
 
-## Debian updates
+## OS and Java updates
 
-Use `unattended-upgrades` as described by the base server setup. A local override
-can enable cleanup and schedule reboots:
+Use `unattended-upgrades` as described by the base server setup. The Corretto
+drop-in installed above adds Java updates from its exact APT repository site.
+Minecraft maintenance runs at 05:00 so it does not overlap the OS reboot window.
+
+Verify the allowed origins with:
 
 ```shell
-sudo nano /etc/apt/apt.conf.d/99unattended-upgrades-local
+sudo unattended-upgrade --dry-run --debug
 ```
-
-```text
-Unattended-Upgrade::Remove-Unused-Dependencies "true";
-Unattended-Upgrade::Automatic-Reboot "true";
-Unattended-Upgrade::Automatic-Reboot-Time "04:10";
-```
-
-Minecraft maintenance runs at 05:00 so it does not overlap the OS reboot window.
 
 ## Restore a snapshot
 
