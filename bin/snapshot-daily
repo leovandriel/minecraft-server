@@ -11,8 +11,8 @@ log() {
 }
 
 send_command() {
-    runuser -u minecraft -- \
-        screen -p 0 -S minecraft -X eval "stuff \"$1\"\\015"
+    /usr/sbin/runuser -u minecraft -- \
+        /usr/bin/screen -p 0 -S minecraft -X eval "stuff \"$1\"\\015"
 }
 
 resume_saving() {
